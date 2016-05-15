@@ -235,7 +235,39 @@ public class AddScores extends JPanel
 		 */
 				btnAddScoreDelete = new JButton("Delete");
 				
-				
+				btnAddScoreDelete.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) 
+					{					
+						try 
+						{
+							String query = "delete from " + HandicapMain.scoreTableName + " where DateField = ?";						
+							PreparedStatement pst = sqliteConnection.connection.prepareStatement(query);
+							
+//							pst.setDate(1, MiscMethods.convertSQLDate(getSaveDate()));
+							pst.setString(1, DisplayScores.saveDate);			// Date in query
+							pst.execute();
+							pst.close();
+						}
+						catch (SQLException e1) 
+						{
+							e1.printStackTrace();
+						}
+						DisplayScores.scoreDataChanged = true;								// Force HI recalc
+						boolean tournament = false;
+						HandicapMain.refreshScoreTable(sqliteConnection.connection, HandicapMain.scoreTableName, tournament);	// Delete, must redisplay
+						chckbxAddScoresTournamentScore.setSelected(false);					// Set tournament off
+						if (HandicapMain.inicatorTournOrNineOnDB.equals(HandicapMain.NINEINDICATOR))	// Was 9 set in record?
+						{
+							HandicapMain.handicapPrefs.remove(HandicapMain.HANDICAPNINEHOLE); 	// Yes, turn off 9 hole hanging
+							HandicapMain.inicatorTournOrNineOnDB = null;									// Set off to be safe
+						}
+						chckbxAddScoresNineHoleScore.setSelected(false);					// Set nine hole off
+						btnAddScoresAdd.setText("Add");										// change button back to Add in Add Score
+						btnAddScoreDelete.setVisible(false);								// Make delete button not visible
+						HandicapMain.cards.show(getParent(), HandicapMain.DISPLAYSCORES);				
+//						MiscMethods.setTabFocus(tabbedPane, ADDSCORESINDEX, DISPLAYSCORESINDEX);
+					}
+				});		
 				
 				constraints.anchor = GridBagConstraints.SOUTHWEST;
 				constraints.insets = new Insets(20, 0, 0, 0);
